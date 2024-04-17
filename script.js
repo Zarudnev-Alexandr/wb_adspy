@@ -1,10 +1,14 @@
-function reloadPageOnNavigation() {//Обновляем страницу при переходе на другие страницы 
-  location.reload();
+function reloadPageOnNavigation() {
+  console.log('Обновляем страницу');
+  // location.reload();
 }
 
-window.addEventListener('popstate', reloadPageOnNavigation);
-let searchText = {}
+window.addEventListener('beforeunload', reloadPageOnNavigation);
+
+// Дополнительный код, если необходимо
+let searchText = {};
 let currentUrl = location.href;
+
 const checkPageTransition = () => {
   requestAnimationFrame(() => {
     if (currentUrl !== window.location.href) {
@@ -37,17 +41,16 @@ let searchResults = [];
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.msg) {
     switch (request.msg) {
-      case 'getSearchResults':
+      case 'allGoodCards':
+        console.log(request);
         searchResults = request.searchResults;
-        fillQueryCards(false, searchResults, cnt);
-        break;
-      case 'getCnt':
         cnt = request.cnt;
-        fillQueryCards(false, searchResults, cnt);
-        break;
+        fillQueryCards()
       default:
         break;
     }
+
+    
   } else if (request === 200) {
     getSearchQuery();
   }
@@ -61,12 +64,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
 function fillQueryCards(wheel) {
   if (searchResults.length !== 0 && cnt !== 0) {
-    console.log(searchResults);
     waitForElm('.product-card-list').then(elm => {
       var cards = [...document.getElementsByClassName('product-card__link j-card-link')];
-      if (wheel && cards.length > 15) {
-        cards = cards.slice(-15);
-      }
+      // if (wheel && cards.length > 15) {
+      //   cards = cards.slice(-15);
+      // }
       if (searchResults.length !== 0) {
         searchResults.forEach(item => {
           let foundCard = cards.find(card => {
@@ -75,9 +77,8 @@ function fillQueryCards(wheel) {
               return true
             }
           });
-          // console.log(foundCard);
 
-          if (foundCard) {
+          if (foundCard && item.cpm) {
             let parentElement = foundCard.parentNode;
             let childElement = parentElement.querySelector('.product-card__middle-wrap');
             if (childElement) {
@@ -163,7 +164,8 @@ function waitForElm(selector) {//Важнейшая функция, описан
 }
 
 document.body.addEventListener('wheel', (event) => {
-  event.wheelDeltaY < 0 ? fillQueryCards(true) : null;
+  event.wheelDeltaY < 0 ? fillQueryCards(true) : 
+    event.wheelDeltaY > 0 ? fillQueryCards(true) : null;
 })
 
 
