@@ -86,7 +86,7 @@ function fillQueryCards(wheel) {
               if (childElement1) {
                 childElement1.insertAdjacentHTML('beforeend', `
                   <p>
-                    <b>Реклама в мес: ${(cnt / 1000 * item.cpm).toFixed(2)}₽</b>
+                    <b>Реклама в мес: ${Math.floor(cnt / 1000 * item.cpm).toLocaleString('ru-RU')} ₽</b>
                   </p>
                 `)
               }
